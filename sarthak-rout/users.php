@@ -17,38 +17,66 @@
 
   </head>
 
-  <body id="body">
-    <table class="table table-responsive table-striped">
-      <thead class="thead-dark">
-        <th>ID</th>
-        <th>USERNAME</th>
-        <th>PASSWORD</th>
-        <th>ACTION</th>
-      </thead>
-      <tbody id="users-list">
-        <?php
-          if ($query=mysqli_query($mysqli,"SELECT * FROM users")) {
-            while ($row=mysqli_fetch_array($query)) {
-                echo '<tr>
-                  <td>'.$row['id'].'</td>
-                  <td>'.$row['username'].'</td>
-                  <td>'.$row['password'].'</td>
-                  <td align="center">
-                  <i onclick="javascript: remove('.$row['id'].');" class="fa fa-times-circle" aria-hidden="true" style="color:red;cursor:pointer;"></i>&nbsp;&nbsp;
-                  <i onclick="javascript: edit('.$row['id'].');" class="fa fa-pencil-square " aria-hidden="true" style="color:orange;cursor:pointer"></i></td>
-                </tr>';
-            }
-          }
-         ?>
-      </tbody>
-      <tfoot class="thead-dark">
-        <th>ID</th>
-        <th>USERNAME</th>
-        <th>PASSWORD</th>
-        <th>ACTION</th>
-      </tfoot>
-    </table>
-    <button type="button" class="btn btn-info" name="button" onclick="javascript: if(confirm('Are you sure')) location.href='index.php'; " style="margin-left: 758px;">Go Back</button>
+  <body>
+    <div class="row">
+      <div class="col-md-1">
+
+      </div>
+      <div class="col-md-10">
+        <div id="body">
+          <table class="table table-hover table-borderless">
+            <thead class="thead-dark">
+              <th>ID</th>
+              <th>USERNAME</th>
+              <th>EMAIL</th>
+              <th>CONTACT </th>
+              <th>STATUS</th>
+              <th>ACTION</th>
+            </thead>
+            <tbody id="users-list">
+              <?php
+              if ($query=mysqli_query($mysqli,"SELECT * FROM users")) {
+                while ($row=mysqli_fetch_array($query)) {
+                  if ($row['status']==1) {
+                    $tdcolor="table-success";
+                  }else if($row['status']==0){
+                    $tdcolor="table-warning";
+                  }else if($row['status']==2){
+                    $tdcolor="table-secondary";
+                  }else {
+                    $tdcolor="table-info";
+                  }
+                  echo '<tr class="'.$tdcolor.'">
+                    <td>'.$row['id'].'</td>
+                    <td>'.$row['username'].'</td>
+                    <td>'.$row['email'].'</td>
+                    <td>'.$row['cno'].'</td>
+                    <td>'.$row['status'].'</td>
+                    <td align="center">
+                    <i onclick="javascript: remove('.$row['id'].');" class="fa fa-times-circle" aria-hidden="true" style="color:red;cursor:pointer;"></i>&nbsp;&nbsp;
+                    <i onclick="javascript: edit('.$row['id'].');" class="fa fa-pencil-square " aria-hidden="true" style="color:orange;cursor:pointer"></i></td>
+                  </tr>';
+                }
+              }
+              ?>
+            </tbody>
+            <tfoot class="thead-dark">
+              <th>ID</th>
+              <th>USERNAME</th>
+              <th>EMAIL</th>
+              <th>CONTACT </th>
+              <th>STATUS</th>
+              <th>ACTION</th>
+            </tfoot>
+          </table>
+          <button type="button" class="btn btn-warning pull-left" name="button" onclick="javascript: if(confirm('Are you sure')) location.href='index.php'; ">Go Back</button>
+          <button type="button" class="btn btn-info pull-right" name="button"  onclick="refresh_users();">Refresh</button>
+        </div>
+      </div>
+    </div>
+
+
+
     <?php include '../config/jscdn.php'; ?>
     <script>
       function remove(id){
@@ -76,8 +104,8 @@
       }
 
       function refresh_users() {
-        $("#body").hide();
-        $("#users-list").empty().delay(1500);
+        $("#body").slideUp("slow");
+        $("#users-list").delay(3000).empty();
         $.ajax({
           url: "list.php",
           type: 'GET',
@@ -87,7 +115,7 @@
           datatype: 'html',
           success: function(response){
             $("#users-list").html(response);
-            $("#body").slideDown(3000);
+            $("#body").slideDown("slow");
           }
         });
       }
@@ -110,6 +138,42 @@
         $("#editModal").modal("show");
       };
     </script>
+
+    <script>
+      function submitUpdateForm() {
+        var uid=$("#uid").val();
+        var username=$("#username").val();
+        var cno=$("#cno").val();
+        var email=$("#email").val();
+        var status=$("#status").val();
+
+
+        $.ajax({
+          url:"action.php",
+          type: "POST",
+          data:{
+            id:uid,
+            username:username,
+            cno:cno,
+            email:email,
+            status:status,
+            submit:'update'
+          },
+          success: function(response){
+            if (response==1) {
+              $("#editModal").modal("hide");
+              alert("Update Succesful");
+              refresh_users();
+            } else {
+              alert("Update Unsuccessful");
+            }
+          }
+        });
+
+
+      }
+    </script>
+
 
   </body>
 
